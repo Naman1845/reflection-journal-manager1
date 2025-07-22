@@ -1,2 +1,71 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.time.LocalDate;
+
+public class ReflectionJournalManager {
+    private JFrame frame;
+    private JTextArea entryArea;
+    private JTextField topicField;
+    private JButton saveButton;
+
+    public ReflectionJournalManager() {
+        frame = new JFrame("Reflection Journal Manager");
+        entryArea = new JTextArea(10, 30);
+        topicField = new JTextField(20);
+        saveButton = new JButton("Save Entry");
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+
+        JPanel topPanel = new JPanel();
+        topPanel.add(new JLabel("Topic: "));
+        topPanel.add(topicField);
+
+        panel.add(topPanel, BorderLayout.NORTH);
+        panel.add(new JScrollPane(entryArea), BorderLayout.CENTER);
+        panel.add(saveButton, BorderLayout.SOUTH);
+
+        saveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                saveEntry();
+            }
+        });
+
+        frame.setContentPane(panel);
+        frame.pack();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+    }
+
+    private void saveEntry() {
+        String topic = topicField.getText().trim();
+        String entry = entryArea.getText().trim();
+
+        if (topic.isEmpty() || entry.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Topic and Entry cannot be empty.");
+            return;
+        }
+
+        String filename = "entry_" + topic.replaceAll("\\s+", "_") + "_" + LocalDate.now() + ".txt";
+
+        try (PrintWriter out = new PrintWriter(new FileWriter(filename))) {
+            out.println("Date: " + LocalDate.now());
+            out.println("Topic: " + topic);
+            out.println("\n" + entry);
+            JOptionPane.showMessageDialog(frame, "Entry saved as " + filename);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(frame, "Error saving entry: " + ex.getMessage());
+        }
+
+        entryArea.setText("");
+        topicField.setText("");
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new ReflectionJournalManager());
+    }
+}
